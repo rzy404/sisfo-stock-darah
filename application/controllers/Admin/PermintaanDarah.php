@@ -52,7 +52,7 @@ class PermintaanDarah extends CI_Controller
                 <option value="Ditolak" ' . ($permintaan->status == 'Ditolak' ? 'selected' : '') . '>Ditolak</option>
             </select>';
             $row[] = $statusOptions;
-            $row[] = '<button class="btn btn-info btn-sm" id="btnDetail" data-golongan="' . $permintaan->golongan_darah . '">Detail</button>';
+            $row[] = '<button class="btn btn-info btn-sm" id="btnDetail" data-golongan="' . $permintaan->golongan_darah . '" data-id="' . $permintaan->id . '">Detail</button>';
             $data[] = $row;
         }
 
@@ -69,9 +69,6 @@ class PermintaanDarah extends CI_Controller
     {
         $id = $this->input->post('id');
         $new_status = $this->input->post('status');
-
-        // generate kode permintaan using uniqid
-        $permintaan_id = uniqid();
 
         // Pastikan ID dan status dikirim
         if (!$id || !$new_status) {
@@ -97,6 +94,7 @@ class PermintaanDarah extends CI_Controller
             return;
         }
 
+        // Mulai transaksi database
         $this->db->trans_start();
 
         // Update status jika status saat ini 'Menunggu'
@@ -106,44 +104,49 @@ class PermintaanDarah extends CI_Controller
         ]);
 
         if ($update) {
-            $stok_darah = $this->db->get_where('stok_darah', ['golongan_darah' => $permintaan->golongan_darah])->row();
+            // Proses pengurangan stok darah hanya jika status baru adalah 'Disetujui'
+            if ($new_status == 'Disetujui') {
+                $stok_darah = $this->db->get_where('stok_darah', ['golongan_darah' => $permintaan->golongan_darah])->row();
 
-            if ($stok_darah && $stok_darah->jumlah >= $permintaan->jumlah_dibutuhkan) {
-                $jumlah_dibutuhkan = (int)$permintaan->jumlah_dibutuhkan;
+                if ($stok_darah && $stok_darah->jumlah >= $permintaan->jumlah_dibutuhkan) {
+                    $jumlah_dibutuhkan = (int)$permintaan->jumlah_dibutuhkan;
 
-                // Kurangi stok darah
-                $this->db->set('jumlah', 'jumlah - ' . $jumlah_dibutuhkan, FALSE);
-                $this->db->where('id', $stok_darah->id);
-                $this->db->update('stok_darah');
+                    // Kurangi stok darah
+                    $this->db->set('jumlah', 'jumlah - ' . $jumlah_dibutuhkan, FALSE);
+                    $this->db->where('id', $stok_darah->id);
+                    $this->db->update('stok_darah');
 
-                // Masukkan data ke tabel transaksi_darah
-                $this->db->insert('transaksi_darah', [
-                    'stok_darah' => $stok_darah->id,
-                    'permintaan_darah' => $id,
-                    'jenis_transaksi' => 'Penggunaan',
-                    'jumlah' => $jumlah_dibutuhkan,
-                    'tanggal_transaksi' => date('Y-m-d'),
-                    'catatan' => 'Penggunaan darah dari permintaan darah #' . $permintaan_id,
-                    'created_at' => date('Y-m-d H:i:s')
-                ]);
+                    // Masukkan data ke tabel transaksi_darah
+                    $this->db->insert('transaksi_darah', [
+                        'stok_darah' => $stok_darah->id,
+                        'permintaan_darah' => $id,
+                        'jenis_transaksi' => 'Penggunaan',
+                        'jumlah' => $jumlah_dibutuhkan,
+                        'tanggal_transaksi' => date('Y-m-d'),
+                        'catatan' => 'Penggunaan darah untuk permintaan darah #' . uniqid(),
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
 
-                // Masukkan data ke tabel stok_darah_log
-                $this->db->insert('stok_darah_log', [
-                    'stok_darah' => $stok_darah->id,
-                    'jumlah' => $jumlah_dibutuhkan,
-                    'jenis_transaksi' => 'Kurang',
-                    'tanggal_log' => date('Y-m-d'),
-                    'created_at' => date('Y-m-d H:i:s')
-                ]);
-            } else {
-                // Rollback jika stok tidak mencukupi
-                $this->db->trans_rollback();
-                $this->sendResponse('error', 'Stok darah tidak mencukupi.');
-                return;
+                    // Masukkan data ke tabel stok_darah_log
+                    $this->db->insert('stok_darah_log', [
+                        'stok_darah' => $stok_darah->id,
+                        'jumlah' => $jumlah_dibutuhkan,
+                        'jenis_transaksi' => 'Kurang',
+                        'tanggal_log' => date('Y-m-d'),
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                } else {
+                    // Rollback jika stok tidak mencukupi
+                    $this->db->trans_rollback();
+                    $this->sendResponse('error', 'Stok darah tidak mencukupi.');
+                    return;
+                }
             }
 
+            // Selesaikan transaksi
             $this->db->trans_complete();
 
+            // Kirim email notifikasi
             $email_status = $this->sendStatusEmail($permintaan->email, $new_status);
 
             if ($email_status) {
@@ -156,6 +159,36 @@ class PermintaanDarah extends CI_Controller
             $this->sendResponse('error', 'Gagal memperbarui status.');
         }
     }
+
+    public function detail()
+    {
+        $id = $this->input->get('id');
+
+        if (!$id) {
+            $this->sendResponse('error', 'ID tidak ditemukan.');
+            return;
+        }
+
+        // Ambil data detail permintaan darah berdasarkan ID
+        $permintaan = $this->PermintaanDarah->getDetailPermintaan($id);
+
+        // Cek apakah data ditemukan
+        if ($permintaan) {
+            $permintaan->catatan = $permintaan->catatan ? $permintaan->catatan : 'Tidak ada catatan';
+
+            // Mengirim data ke view
+            $data['permintaan'] = $permintaan;
+
+            // Render view ke dalam HTML
+            $html = $this->load->view('backend/admin/permintaan_darah/detail', $data, TRUE);
+
+            // Kirim response
+            $this->sendResponse(true, 'Data ditemukan.', ['data' => $permintaan, 'html' => $html]);
+        } else {
+            $this->sendResponse(false, 'Data tidak ditemukan.');
+        }
+    }
+
 
     private function sendStatusEmail($to_email, $new_status)
     {
@@ -181,9 +214,13 @@ class PermintaanDarah extends CI_Controller
     }
 
     // Method untuk mengirim response
-    private function sendResponse($status, $message)
+    private function sendResponse($status, $message, $data = null)
     {
         $response = array('status' => $status, 'message' => $message);
+
+        if ($data) {
+            $response['data'] = $data;
+        }
         echo json_encode($response);
     }
 }

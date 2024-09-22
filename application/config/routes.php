@@ -55,3 +55,7 @@ $route['admin/donor/get-detail-pendonor'] = 'admin/donor/getDetailPendonor';
 $route['admin/permintaan-darah'] = 'admin/permintaandarah';
 $route['admin/permintaan-darah/get-permintaan-darah'] = 'admin/permintaandarah/getPermintaanDarah';
 $route['admin/permintaan-darah/update-status-permintaan'] = 'admin/permintaandarah/updateStatusPermintaan';
+$route['admin/permintaan-darah/detail'] = 'admin/permintaandarah/detail';
+
+// transaksi darah
+$route['admin/transaksi-darah'] = 'admin/transaksidarah';

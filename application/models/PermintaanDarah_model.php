@@ -77,11 +77,36 @@ class PermintaanDarah_model extends CI_Model
         return $query->row();
     }
 
-
     public function update($where, $data)
     {
         $this->db->update('permintaan_darah', $data, $where);
         return $this->db->affected_rows() > 0;
+    }
+
+    public function getDetailPermintaan($id)
+    {
+        $this->db->select('
+            permintaan_darah.id,
+            permintaan_darah.nama_pemohon,
+            permintaan_darah.golongan_darah,
+            permintaan_darah.jumlah_dibutuhkan,
+            permintaan_darah.nomor_telepon,
+            permintaan_darah.status,
+            permintaan_darah.catatan,
+            golongan_darah.golongan_darah AS nama_golongan,
+            permintaan_darah.created_at
+        ');
+        $this->db->from('permintaan_darah');
+        $this->db->join('golongan_darah', 'permintaan_darah.golongan_darah = golongan_darah.id');
+        $this->db->where('permintaan_darah.id', $id);
+
+        $query = $this->db->get();
+
+        if ($query->num_rows() > 0) {
+            return $query->row();
+        } else {
+            return false;
+        }
     }
 }
 
