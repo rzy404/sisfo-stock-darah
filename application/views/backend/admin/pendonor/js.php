@@ -7,7 +7,7 @@
             "serverSide": true,
             "order": [],
             "ajax": {
-                "url": "<?= base_url('master/getStokDarah'); ?>",
+                "url": "<?= base_url('admin/donor/get-pendonor'); ?>",
                 "type": "POST",
                 "error": function(xhr, status, error) {
                     console.error(xhr.responseText);
@@ -18,126 +18,63 @@
 
         var detailTable;
 
-        $('#btnAdd').click(function() {
-            $.ajax({
-                url: '<?= base_url('master/stok-darah/add') ?>',
-                method: 'GET',
-                dataType: 'JSON',
-                cache: false,
-                success: function(result) {
-                    if (result.status) {
-                        $("#modalCostum .modal-body").html(result.html);
-                        modalShow('Tambah Stok Darah', 'modal-dialog modal-md');
-                        $('#btnSave').show();
-                        $('#btnCancel').text('Cancel');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
-                    Swal.fire('Error', 'Terjadi kesalahan, coba lagi.', 'error');
-                }
-            });
-        });
-
-        $('#modalCostum').on('click', '#btnSave', function(event) {
-            event.preventDefault();
-
-            $('.form-group').removeClass('has-error');
-            $('.error-message').remove();
-
-            var isValid = validateForm();
-
-            if (isValid) {
-                var url = $('#action').val() === 'edit' ?
-                    '<?= base_url('master/stok-darah/edit') ?>' :
-                    '<?= base_url('master/stok-darah/add') ?>';
-
-                $.ajax({
-                    url: url,
-                    method: 'POST',
-                    dataType: 'JSON',
-                    data: $('#formSubmit').serialize(),
-                    success: function(response) {
-                        Swal.fire(response.message, '', response.type);
-                        $('#table1').DataTable().ajax.reload();
-                        $('#modalCostum').modal('hide');
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(xhr.responseText);
-                        Swal.fire('Terjadi kesalahan, coba lagi.', '', 'error');
-                    }
-                });
-            }
-        });
-
         $(document).on('click', '#btnDetail', function() {
             var golongan = $(this).data('golongan');
 
-            if (detailTable) {
-                detailTable.destroy();
-            }
+            console.log(golongan);
 
             $("#modalCostum .modal-body").html('<table class="table table-striped" id="tableDetail">' +
-                '<thead><tr><th>No</th><th>Jumlah</th><th>Tanggal Expired</th><th>Aksi</th></tr></thead>' +
+                '<thead><tr><th>No</th><th>Nama Pendonor</th><th>Email</th><th>Tanggal Donor</th></tr></thead>' +
                 '<tbody></tbody></table>');
 
-            modalShow('Detail Stok Darah', 'modal-dialog modal-lg');
+            modalShow('Detail Pendonor', 'modal-dialog modal-lg');
             $('#btnSave').hide();
             $('#btnCancel').text('Tutup');
 
-            detailTable = $('#tableDetail').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: '<?= base_url('master/stok-darah/detail') ?>',
-                    type: 'GET',
-                    data: {
-                        golongan: golongan
-                    },
-                    dataType: 'JSON',
-                    cache: false,
-                    dataSrc: function(json) {
-                        console.log(json.data)
-                        return json.data;
-                    },
-                },
-                columns: [{
-                        data: null,
-                        render: function(data, type, row, meta) {
-                            return meta.row + 1;
+            if (!detailTable) {
+                // Initialize DataTable only once
+                detailTable = $('#tableDetail').DataTable({
+                    processing: true,
+                    serverSide: false,
+                    ajax: {
+                        url: '<?= base_url('admin/donor/get-detail-pendonor') ?>',
+                        type: 'GET',
+                        data: {
+                            golongan: golongan
+                        },
+                        error: function(xhr, status, error) {
+                            console.error(xhr.responseText);
+                            Swal.fire('Error', 'Terjadi kesalahan, coba lagi.', 'error');
                         }
                     },
-                    {
-                        data: '1',
-                        render: function(data) {
-                            return data;
-                        }
-                    },
-                    {
-                        data: '2',
-                        render: function(data) {
-                            return data;
-                        }
-                    },
-                    {
-                        data: '3',
-                        render: function(data, type, row) {
-                            return '<button class="btn btn-danger btn-sm" id="btnDeleteStokDarah" data-id="' + row.id + '">Hapus</button>';
-                        }
-                    }
-                ],
-                ordering: false,
-                searching: false,
-                autoWidth: false,
-            });
+                    columns: [{
+                            data: 0
+                        }, // Use the first item of the array returned from the controller
+                        {
+                            data: 1
+                        }, // nama_pendonor
+                        {
+                            data: 2
+                        }, // email
+                        {
+                            data: 3
+                        } // tanggal_donor
+                    ],
+                    deferRender: true,
+                    ordering: false,
+                    searching: false,
+                    autoWidth: false,
+                });
+            } else {
+                detailTable.clear().draw();
+            }
         });
 
-
         $('#modalCostum').on('hidden.bs.modal', function() {
-            // if (detailTable) {
-            //     detailTable.destroy();
-            //     detailTable = null;
-            // }
+            if (detailTable) {
+                detailTable.destroy();
+                detailTable = null;
+            }
             $(this).find('.modal-body').html('');
         });
 
@@ -180,41 +117,5 @@
             var year = date.getFullYear();
             return day + '/' + month + '/' + year;
         }
-
-        $(document).on('click', '#btnDeleteStokDarah', function() {
-            var id = $(this).data('id');
-            Swal.fire({
-                title: 'Apakah anda yakin?',
-                text: "Anda akan menghapus data ini",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, hapus'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: '<?= base_url('master/stok-darah/delete-stok') ?>',
-                        method: 'POST',
-                        dataType: 'JSON',
-                        data: {
-                            id: id,
-                        },
-                        cache: false,
-                        error: function(xhr, status, error) {
-                            console.log(xhr.responseText);
-                            Swal.fire('Error', 'Hapus data gagal, coba lagi.', 'error');
-                        },
-                        success: function(result) {
-                            console.log(result);
-                            Swal.fire(result.message, '', result.status === true ? 'success' : 'error');
-                            $('#table1').DataTable().ajax.reload();
-                            $('#tableDetail').DataTable().ajax.reload();
-                            $('#modalCostum').modal('hide');
-                        }
-                    });
-                }
-            });
-        });
     });
 </script>

@@ -45,3 +45,5 @@ $route['master/stok-darah/delete-stok'] = 'admin/stockdarah/deleteStok';
 
 // pendonor
 $route['admin/donor'] = 'admin/donor';
+$route['admin/donor/get-pendonor'] = 'admin/donor/getPendonor';
+$route['admin/donor/get-detail-pendonor'] = 'admin/donor/getDetailPendonor';

@@ -23,14 +23,11 @@
             background-color: var(--light-color);
         }
 
-        /* Navbar styles */
         .navbar {
             background-color: var(--light-color);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 0.5rem 0;
-            /* Adjusted padding */
             height: 70px;
-            /* Set fixed height */
         }
 
         .navbar-brand {
@@ -41,15 +38,12 @@
 
         .navbar-brand .logo {
             max-height: 50px;
-            /* Adjust logo height */
             width: auto;
             margin-right: 10px;
-            /* Space between logo and text */
         }
 
         .navbar-brand .navbar-text {
             font-size: 1.5rem;
-            /* Adjust font size */
             font-weight: 700;
             color: var(--primary-color);
         }
@@ -209,6 +203,13 @@
         .pulse-animation {
             animation: pulse 2s infinite;
         }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 
@@ -228,7 +229,7 @@
                     <li class="nav-item"><a class="nav-link" href="#stock">Stok Darah</a></li>
                     <li class="nav-item"><a class="nav-link" href="#about">Tentang</a></li>
                     <li class="nav-item"><a class="nav-link" href="#features">Fitur</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contact">Kontak</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#request-blood">Pengajuan Stok</a></li>
                     <li class="nav-item ms-3"><a class="btn btn-login" href="<?= base_url('login') ?>">Login</a></li>
                 </ul>
             </div>
@@ -307,7 +308,7 @@
                     <a href="#" class="btn btn-custom mt-3">Pelajari Lebih Lanjut</a>
                 </div>
                 <div class="col-lg-6">
-                    <img src="/api/placeholder/600/400" alt="Tentang Kami" class="img-fluid rounded-3 shadow">
+                    <img src="<?= base_url('assets/images/content-2.jpg') ?>" alt="Tentang Kami" class="img-fluid rounded-3 shadow">
                 </div>
             </div>
         </div>
@@ -352,30 +353,56 @@
         <div class="container text-center">
             <h2 class="mb-4">Siap untuk Menyelamatkan Nyawa?</h2>
             <p class="lead mb-4">Bergabunglah dengan komunitas donor darah kami dan jadilah pahlawan bagi mereka yang membutuhkan.</p>
-            <a href="#" class="btn btn-custom btn-lg">Daftar Sekarang</a>
+            <a href="<?= base_url('donor-darah') ?>" class="btn btn-custom btn-lg">Daftar Sekarang</a>
         </div>
     </section>
 
-    <section id="contact" class="py-5 bg-white">
+    <section id="hospital-map" class="py-5 bg-white">
         <div class="container">
-            <h2 class="text-center section-title">Hubungi Kami</h2>
+            <h2 class="text-center section-title">Lokasi Rumah Sakit</h2>
+            <div class="row mt-5">
+                <div class="col-md-12">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="request-blood" class="py-5 bg-white">
+        <div class="container">
+            <h2 class="text-center section-title">Pengajuan Stok Darah</h2>
             <div class="row mt-5">
                 <div class="col-md-6 mb-4 mb-md-0">
-                    <form>
+                    <form id="bloodRequestForm">
                         <div class="mb-3">
-                            <input type="text" class="form-control" placeholder="Nama Anda">
+                            <input type="text" class="form-control" placeholder="Nama Lengkap" required>
                         </div>
                         <div class="mb-3">
-                            <input type="email" class="form-control" placeholder="Email Anda">
+                            <input type="email" class="form-control" placeholder="Email" required>
                         </div>
                         <div class="mb-3">
-                            <textarea class="form-control" rows="5" placeholder="Pesan Anda"></textarea>
+                            <input type="tel" class="form-control" placeholder="Nomor Telepon" required>
                         </div>
-                        <button type="submit" class="btn btn-custom">Kirim Pesan</button>
+                        <div class="mb-3">
+                            <select class="form-select" required>
+                                <option value="">Pilih Golongan Darah</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="AB">AB</option>
+                                <option value="O">O</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <input type="number" class="form-control" placeholder="Jumlah Kantong Darah" required>
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control" rows="5" placeholder="Alasan Pengajuan" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-custom">Ajukan Permintaan</button>
                     </form>
                 </div>
                 <div class="col-md-6">
-                    <img src="/api/placeholder/600/400" alt="Kontak" class="img-fluid rounded-3 shadow">
+                    <img src="<?= base_url('assets/images/content-1.jpg') ?>" alt="Pengajuan Stok Darah" class="img-fluid rounded-3 shadow">
                 </div>
             </div>
         </div>
@@ -395,6 +422,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
     <script>
         // Chart.js configuration
         var ctx = document.getElementById('bloodDonationChart').getContext('2d');
@@ -446,6 +474,39 @@
                     }
                 }
             }
+        });
+
+        // Google Maps configuration
+        function initMap() {
+            var rsHerminaMakassar = {
+                lat: -5.1679,
+                lng: 119.4609
+            }; // Coordinates for RS Hermina Makassar
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 15,
+                center: rsHerminaMakassar
+            });
+
+            var marker = new google.maps.Marker({
+                position: rsHerminaMakassar,
+                map: map,
+                title: 'RS Hermina Makassar'
+            });
+
+            var infoWindow = new google.maps.InfoWindow({
+                content: 'RS Hermina Makassar<br>Jl. Toddopuli Raya Timur No.7, Borong, Kec. Manggala, Kota Makassar, Sulawesi Selatan 90231'
+            });
+
+            marker.addListener('click', function() {
+                infoWindow.open(map, marker);
+            });
+        }
+
+        // Form submission handler
+        document.getElementById('bloodRequestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Permintaan stok darah telah dikirim. Kami akan menghubungi Anda segera.');
+            this.reset();
         });
 
         // Scroll animation
