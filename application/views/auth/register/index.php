@@ -4,7 +4,7 @@
             <div class="card pt-4">
                 <div class="card-body">
                     <div class="text-center mb-5">
-                        <img src="<?= base_url('assets/images/logo-only.png') ?>" height="48" class='mb-4'>
+                        <img src="<?= base_url('assets/images/logo.png') ?>" height="48" class='mb-4'>
                         <h3>Register</h3>
                         <p>Silakan buat akun baru di sini untuk menjadi pendonor darah. Dengan mendaftarkan diri, Anda dapat membantu menyelamatkan nyawa dan memantau riwayat donor darah Anda secara mudah.</p>
                     </div>

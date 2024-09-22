@@ -4,7 +4,7 @@
             <div class="card pt-4">
                 <div class="card-body">
                     <div class="text-center mb-5">
-                        <img src="<?= base_url('assets/images/logo-only.png') ?>" height="48" class='mb-4'>
+                        <img src="<?= base_url('assets/images/logo.png') ?>" height="48" class='mb-4'>
                         <h3>Login</h3>
                         <p>Silahkan login terlebih dahulu untuk melanjutkan ke halaman dashboard.</p>
                     </div>

@@ -1,8 +1,10 @@
 <div id="sidebar" class='active'>
     <div class="sidebar-wrapper active">
         <div class="sidebar-header">
-            <img src="<?= base_url('assets/images/logo.png') ?>" alt="Logo">
+            <img src="<?= base_url('assets/images/logo.png') ?>" alt="Logo" style="height: 50px; width: auto;">
+            <span class="app-name" style="font-size: 20px; font-weight: bold; margin-left: 10px;">SiDarah</span>
         </div>
+
         <div class="sidebar-menu">
             <ul class="menu">
                 <li class='sidebar-title'>Main Menu</li>

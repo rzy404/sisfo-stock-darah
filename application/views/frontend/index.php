@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         :root {
             --primary-color: #e53935;
@@ -217,7 +218,7 @@
     <nav class="navbar navbar-expand-lg navbar-light fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <img src="<?= base_url('assets/images/logo-only.png') ?>" alt="Logo" class="logo">
+                <img src="<?= base_url('assets/images/logo.png') ?>" alt="Logo" class="logo">
                 <span class="navbar-text">SiDarah</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -362,7 +363,7 @@
             <h2 class="text-center section-title">Lokasi Rumah Sakit</h2>
             <div class="row mt-5">
                 <div class="col-md-12">
-                    <div id="map"></div>
+                    <iframe width="100%" height="300" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3971.1072282690297!2d120.18861387364942!3d-5.551118655156967!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dbbff8efd8f96cb%3A0x52a442a1aa3c8c9f!2sRSUD%20H.%20Andi%20Sulthan%20Daeng%20Radja%20Kabupaten%20Bulukumba!5e0!3m2!1sid!2sid!4v1694802915308!5m2!1sid!2sid" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>
         </div>
@@ -373,33 +374,33 @@
             <h2 class="text-center section-title">Pengajuan Stok Darah</h2>
             <div class="row mt-5">
                 <div class="col-md-6 mb-4 mb-md-0">
-                    <form id="bloodRequestForm">
+                    <form id="bloodRequestForm" method="POST" action="">
                         <div class="mb-3">
-                            <input type="text" class="form-control" placeholder="Nama Lengkap" required>
+                            <input type="text" class="form-control" placeholder="Nama Lengkap" name="nama_lengkap" id="nama_lengkap">
                         </div>
                         <div class="mb-3">
-                            <input type="email" class="form-control" placeholder="Email" required>
+                            <input type="email" class="form-control" placeholder="Email" name="email" id="email">
                         </div>
                         <div class="mb-3">
-                            <input type="tel" class="form-control" placeholder="Nomor Telepon" required>
+                            <input type="tel" class="form-control" placeholder="Nomor Telepon" name="nomor_telepon" id="nomor_telepon">
                         </div>
                         <div class="mb-3">
-                            <select class="form-select" required>
+                            <select class="form-select" name="golongan_darah" id="golongan_darah">
                                 <option value="">Pilih Golongan Darah</option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="AB">AB</option>
-                                <option value="O">O</option>
+                                <?php foreach ($golongan_darah as $golongan): ?>
+                                    <option value="<?= $golongan->id ?>"><?= $golongan->golongan_darah ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <input type="number" class="form-control" placeholder="Jumlah Kantong Darah" required>
+                            <input type="number" class="form-control" placeholder="Jumlah Kantong Darah" name="jml_kantong" id="jml_kantong">
                         </div>
                         <div class="mb-3">
-                            <textarea class="form-control" rows="5" placeholder="Alasan Pengajuan" required></textarea>
+                            <textarea class="form-control" rows="5" placeholder="Alasan Pengajuan" name="alasan" id="alasan"></textarea>
                         </div>
                         <button type="submit" class="btn btn-custom">Ajukan Permintaan</button>
                     </form>
+
                 </div>
                 <div class="col-md-6">
                     <img src="<?= base_url('assets/images/content-1.jpg') ?>" alt="Pengajuan Stok Darah" class="img-fluid rounded-3 shadow">
@@ -420,8 +421,10 @@
         </div>
     </footer>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
     <script>
         // Chart.js configuration
@@ -476,39 +479,6 @@
             }
         });
 
-        // Google Maps configuration
-        function initMap() {
-            var rsHerminaMakassar = {
-                lat: -5.1679,
-                lng: 119.4609
-            }; // Coordinates for RS Hermina Makassar
-            var map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 15,
-                center: rsHerminaMakassar
-            });
-
-            var marker = new google.maps.Marker({
-                position: rsHerminaMakassar,
-                map: map,
-                title: 'RS Hermina Makassar'
-            });
-
-            var infoWindow = new google.maps.InfoWindow({
-                content: 'RS Hermina Makassar<br>Jl. Toddopuli Raya Timur No.7, Borong, Kec. Manggala, Kota Makassar, Sulawesi Selatan 90231'
-            });
-
-            marker.addListener('click', function() {
-                infoWindow.open(map, marker);
-            });
-        }
-
-        // Form submission handler
-        document.getElementById('bloodRequestForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Permintaan stok darah telah dikirim. Kami akan menghubungi Anda segera.');
-            this.reset();
-        });
-
         // Scroll animation
         window.addEventListener('scroll', function() {
             var elements = document.querySelectorAll('.blood-stock-card, .feature-card, .btn-custom');
@@ -531,6 +501,100 @@
             );
         }
     </script>
+    <script>
+        $(document).ready(function() {
+            $('#bloodRequestForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const namaLengkap = $('#nama_lengkap').val().trim();
+                const email = $('#email').val().trim();
+                const nomorTelepon = $('#nomor_telepon').val().trim();
+                const golonganDarah = $('#golongan_darah').val();
+                const jmlKantong = $('#jml_kantong').val().trim();
+                const alasan = $('#alasan').val().trim();
+
+                // Basic validation
+                if (!namaLengkap || !email || !nomorTelepon || !golonganDarah || !jmlKantong || !alasan) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: 'Semua kolom harus diisi!',
+                    });
+                    return;
+                }
+
+                // Email format validation
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Format email tidak valid!',
+                    });
+                    return;
+                }
+
+                // Phone number format validation (simple check for 10-15 digits)
+                const phonePattern = /^\d{10,15}$/;
+                if (!phonePattern.test(nomorTelepon)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Nomor telepon harus terdiri dari 10-15 digit!',
+                    });
+                    return;
+                }
+
+                // Check if number of blood bags is a positive integer
+                if (parseInt(jmlKantong) <= 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Jumlah kantong darah harus lebih dari 0!',
+                    });
+                    return;
+                }
+
+                const formData = $(this).serialize(); // Collect form data
+
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= base_url('pengajuan-darah') ?>',
+                    data: formData,
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log(response);
+                        if (response.status === 'success') {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: response.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                $('#bloodRequestForm')[0].reset(); // Reset the form
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.message,
+                                icon: 'error',
+                                confirmButtonText: 'Try Again'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Terjadi kesalahan. Silakan coba lagi.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+
 </body>
 
 </html>

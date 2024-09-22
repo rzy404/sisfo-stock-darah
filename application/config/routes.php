@@ -8,6 +8,9 @@ $route['login'] = 'auth/login';
 $route['register'] = 'auth/register';
 $route['logout'] = 'auth/logout';
 
+// pengajuan darah
+$route['pengajuan-darah'] = 'landingpage/pengajuan_darah';
+
 // admin
 $route['admin'] = 'admin/dashboard';
 $route['admin/dashboard'] = 'admin/dashboard';
@@ -47,3 +50,8 @@ $route['master/stok-darah/delete-stok'] = 'admin/stockdarah/deleteStok';
 $route['admin/donor'] = 'admin/donor';
 $route['admin/donor/get-pendonor'] = 'admin/donor/getPendonor';
 $route['admin/donor/get-detail-pendonor'] = 'admin/donor/getDetailPendonor';
+
+// permintaan darah
+$route['admin/permintaan-darah'] = 'admin/permintaandarah';
+$route['admin/permintaan-darah/get-permintaan-darah'] = 'admin/permintaandarah/getPermintaanDarah';
+$route['admin/permintaan-darah/update-status-permintaan'] = 'admin/permintaandarah/updateStatusPermintaan';
