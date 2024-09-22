@@ -3,11 +3,12 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class PermintaanDarah extends CI_Controller
 {
-
+    public $email;
     public function __construct()
     {
         parent::__construct();
         date_default_timezone_set('Asia/Jakarta');
+        $this->load->library('email');
         $this->zyauth->check_login();
         $this->zyauth->check_session_timeout();
         $this->zyauth->check_permission('admin/donor');
@@ -17,6 +18,7 @@ class PermintaanDarah extends CI_Controller
         $this->load->model('TransaksiDarah_model', 'TransaksiDarah');
         $this->load->model('PermintaanDarah_model', 'PermintaanDarah');
         $this->load->model('Pengguna_model', 'Pengguna');
+        $this->email->initialize();
     }
 
     public function index()
@@ -68,6 +70,9 @@ class PermintaanDarah extends CI_Controller
         $id = $this->input->post('id');
         $new_status = $this->input->post('status');
 
+        // generate kode permintaan using uniqid
+        $permintaan_id = uniqid();
+
         // Pastikan ID dan status dikirim
         if (!$id || !$new_status) {
             $response = array('status' => 'error', 'message' => 'Data tidak lengkap.');
@@ -76,7 +81,7 @@ class PermintaanDarah extends CI_Controller
         }
 
         // Ambil status saat ini dari database
-        $permintaan = $this->PermintaanDarah->select_where($id, 'status');
+        $permintaan = $this->PermintaanDarah->select_where($id, 'status, email, golongan_darah, jumlah_dibutuhkan');
 
         // Cek apakah data ditemukan
         if (!$permintaan) {
@@ -92,6 +97,8 @@ class PermintaanDarah extends CI_Controller
             return;
         }
 
+        $this->db->trans_start();
+
         // Update status jika status saat ini 'Menunggu'
         $update = $this->PermintaanDarah->update(['id' => $id], [
             'status' => $new_status,
@@ -99,11 +106,84 @@ class PermintaanDarah extends CI_Controller
         ]);
 
         if ($update) {
-            $response = array('status' => 'success', 'message' => 'Status berhasil diperbarui.');
+            $stok_darah = $this->db->get_where('stok_darah', ['golongan_darah' => $permintaan->golongan_darah])->row();
+
+            if ($stok_darah && $stok_darah->jumlah >= $permintaan->jumlah_dibutuhkan) {
+                $jumlah_dibutuhkan = (int)$permintaan->jumlah_dibutuhkan;
+
+                // Kurangi stok darah
+                $this->db->set('jumlah', 'jumlah - ' . $jumlah_dibutuhkan, FALSE);
+                $this->db->where('id', $stok_darah->id);
+                $this->db->update('stok_darah');
+
+                // Masukkan data ke tabel transaksi_darah
+                $this->db->insert('transaksi_darah', [
+                    'stok_darah' => $stok_darah->id,
+                    'permintaan_darah' => $id,
+                    'jenis_transaksi' => 'Penggunaan',
+                    'jumlah' => $jumlah_dibutuhkan,
+                    'tanggal_transaksi' => date('Y-m-d'),
+                    'catatan' => 'Penggunaan darah dari permintaan darah #' . $permintaan_id,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+
+                // Masukkan data ke tabel stok_darah_log
+                $this->db->insert('stok_darah_log', [
+                    'stok_darah' => $stok_darah->id,
+                    'jumlah' => $jumlah_dibutuhkan,
+                    'jenis_transaksi' => 'Kurang',
+                    'tanggal_log' => date('Y-m-d'),
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            } else {
+                // Rollback jika stok tidak mencukupi
+                $this->db->trans_rollback();
+                $this->sendResponse('error', 'Stok darah tidak mencukupi.');
+                return;
+            }
+
+            $this->db->trans_complete();
+
+            $email_status = $this->sendStatusEmail($permintaan->email, $new_status);
+
+            if ($email_status) {
+                $this->sendResponse('success', 'Status berhasil diperbarui dan email dikirim.');
+            } else {
+                $this->sendResponse('error', 'Status diperbarui, tapi gagal mengirim email.');
+            }
         } else {
-            $response = array('status' => 'error', 'message' => 'Gagal memperbarui status.');
+            $this->db->trans_rollback();
+            $this->sendResponse('error', 'Gagal memperbarui status.');
+        }
+    }
+
+    private function sendStatusEmail($to_email, $new_status)
+    {
+        // Pastikan email penerima tersedia
+        if (!$to_email) {
+            return false;
         }
 
+        // Tentukan isi email berdasarkan status
+        $subject = 'Pembaruan Status Permintaan Darah';
+        $message = ($new_status == 'Disetujui')
+            ? 'Selamat, permintaan darah Anda telah disetujui untuk lebih lanjut silahkan menghubungi kami.'
+            : 'Mohon maaf, permintaan darah Anda telah ditolak.';
+
+        // Atur pengirim dan konten email
+        $this->email->from('rsud-bulukumba@sidarah.com', 'SiDarah');
+        $this->email->to($to_email);
+        $this->email->subject($subject);
+        $this->email->message($message);
+
+        // Kirim email dan kembalikan status
+        return $this->email->send();
+    }
+
+    // Method untuk mengirim response
+    private function sendResponse($status, $message)
+    {
+        $response = array('status' => $status, 'message' => $message);
         echo json_encode($response);
     }
 }

@@ -40,8 +40,8 @@
                     console.log(response);
                     if (response.status === 'success') {
                         Swal.fire({
-                            title: 'Updated!',
-                            text: 'Status berhasil diperbarui.',
+                            title: 'Sukses!',
+                            text: response.message,
                             icon: 'success',
                             confirmButtonText: 'OK'
                         }).then(() => {
