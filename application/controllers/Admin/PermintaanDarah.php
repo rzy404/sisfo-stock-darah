@@ -11,7 +11,7 @@ class PermintaanDarah extends CI_Controller
         $this->load->library('email');
         $this->zyauth->check_login();
         $this->zyauth->check_session_timeout();
-        $this->zyauth->check_permission('admin/donor');
+        $this->zyauth->check_permission('admin/permintaan-darah');
         $this->load->model('GolonganDarah_model', 'GolonganDarah');
         $this->load->model('StockDarah_model', 'StokDarah');
         $this->load->model('StockDarahLog_model', 'StokDarahLog');

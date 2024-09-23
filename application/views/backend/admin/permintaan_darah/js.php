@@ -98,9 +98,7 @@
                         $('#catatanPermintaan').text(response.data.data.catatan || 'Tidak ada catatan');
                         $('#createdAt').text(response.data.data.created_at);
                         modalShow('Detail Permintaan Darah Golongan ' + golongan, 'modal-dialog modal-md');
-                        // button simpan dihide
                         $('#btnSave').hide();
-                        // button batal di ganti text
                         $('#btnCancel').text('Tutup');
                     } else {
                         Swal.fire('Error', response.message, 'error');
@@ -111,91 +109,5 @@
                 }
             });
         }
-
-        $('#modalCostum').on('click', '#btnSave', function(event) {
-            event.preventDefault();
-
-            $('.form-group').removeClass('has-error');
-            $('.error-message').remove();
-
-            var namaLengkap = $('#nama_lengkap').val().trim();
-            var email = $('#email').val().trim();
-            var password = $('#password').val().trim();
-            var role = $('#role').val().trim();
-            var action = $('#action').val();
-
-            var isValid = true;
-
-            if (namaLengkap === '') {
-                $('#nama_lengkap').closest('.form-group').addClass('has-error');
-                $('#nama_lengkap').after('<span class="error-message">Nama Lengkap wajib diisi.</span>');
-                isValid = false;
-            }
-
-            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (email === '' || !emailPattern.test(email)) {
-                $('#email').closest('.form-group').addClass('has-error');
-                $('#email').after('<span class="error-message">Email tidak valid.</span>');
-                isValid = false;
-            }
-
-            if (action === 'add' && password === '') {
-                $('#password').closest('.form-group').addClass('has-error');
-                $('#password').after('<span class="error-message">Password wajib diisi.</span>');
-                isValid = false;
-            }
-
-            if (role === '') {
-                $('#role').closest('.form-group').addClass('has-error');
-                $('#role').after('<span class="error-message">Role wajib diisi.</span>');
-                isValid = false;
-            }
-
-            if (isValid) {
-                var url = action === 'edit' ? '<?= base_url('master/pengguna/edit') ?>' : '<?= base_url('master/pengguna/add') ?>';
-                $.ajax({
-                    url: url,
-                    method: 'POST',
-                    dataType: 'JSON',
-                    data: $('#formSubmit').serialize(),
-                    success: function(response) {
-                        Swal.fire(response.message, '', response.type);
-                        $('#table1').DataTable().ajax.reload();
-                        $('#modalCostum').modal('hide');
-                    },
-                    error: function(xhr, status, error) {
-                        console.log(xhr.responseText);
-                        Swal.fire('Terjadi kesalahan, coba lagi.', '', 'error');
-                    }
-                });
-            }
-        });
-
-        $(document).on('click', '#btnedit', function() {
-            var id = $(this).data('id');
-
-            $.ajax({
-                url: '<?= base_url('master/pengguna/edit') ?>',
-                method: 'GET',
-                dataType: 'JSON',
-                data: {
-                    id: id
-                },
-                success: function(result) {
-                    if (result.status) {
-                        $("#modalCostum .modal-body").html(result.html);
-                        modalShow('Edit Pengguna', 'modal-dialog modal-md');
-                    }
-                },
-                error: function(ajax, status, error) {
-                    Swal.fire('Error', 'Terjadi kesalahan, coba lagi.', 'error');
-                }
-            });
-        });
-
-        $(document).on('click', '#btnDelete', function() {
-            var id = $(this).data('id');
-            deleteData(id, '<?= base_url('master/pengguna/delete') ?>');
-        });
     });
 </script>

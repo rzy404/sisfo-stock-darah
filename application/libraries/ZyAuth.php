@@ -99,7 +99,8 @@ class ZyAuth
                 ],
                 'donor' => [],
                 'permintaan-darah' => [],
-                'transaksi-darah' => []
+                'transaksi-darah' => [],
+                'laporan' => []
             ],
             'user' => [
                 'donor-darah' => []

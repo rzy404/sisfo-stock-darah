@@ -59,3 +59,5 @@ $route['admin/permintaan-darah/detail'] = 'admin/permintaandarah/detail';
 
 // transaksi darah
 $route['admin/transaksi-darah'] = 'admin/transaksidarah';
+$route['admin/get-transaksi-darah'] = 'admin/transaksidarah/getTransaksiDarah';
+$route['admin/delete-transaksi-darah'] = 'admin/transaksidarah/deleteTransaksiDarah';
