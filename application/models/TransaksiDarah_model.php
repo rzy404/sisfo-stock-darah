@@ -79,6 +79,25 @@ class TransaksiDarah_model extends CI_Model
     {
         return $this->db->delete($this->table, array('id' => $id));
     }
+
+    public function get_filtered_transaksi($filters)
+    {
+        $this->db->select('*');
+        $this->db->from('transaksi_darah');
+
+        if (!empty($filters['tanggal_dari'])) {
+            $this->db->where('tanggal_transaksi >=', $filters['tanggal_dari']);
+        }
+        if (!empty($filters['tanggal_sampai'])) {
+            $this->db->where('tanggal_transaksi <=', $filters['tanggal_sampai']);
+        }
+        if (!empty($filters['jenis_transaksi'])) {
+            $this->db->where('jenis_transaksi', $filters['jenis_transaksi']);
+        }
+
+        $query = $this->db->get();
+        return $query->result();
+    }
 }
 
 
