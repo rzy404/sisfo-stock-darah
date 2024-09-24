@@ -14,7 +14,9 @@ class Dashboard extends CI_Controller
         $this->zyauth->check_session_timeout();
         $this->zyauth->check_permission('dashboard');
         $this->load->model('GolonganDarah_model', 'GolonganDarah');
+        $this->load->model('LandingPage_model', 'LandingPage');
         $this->load->model('Pengguna_model', 'Pengguna');
+        $this->load->model('Pendonor_model', 'Pendonor');
     }
 
     public function index()
@@ -39,7 +41,9 @@ class Dashboard extends CI_Controller
         $data['title'] = 'Dashboard';
         $data['content'] = $this->load->view('backend/user/dashboard/index', [
             'biodata' => $data['biodata'],
-            'golongan_darah' => $data['golongan_darah']
+            'golongan_darah' => $data['golongan_darah'],
+            'totalBloodStock' => $this->LandingPage->get_blood_stocks(),
+            'pendonor' => $this->Pendonor->getRiwayatPendonor()
         ], TRUE);
         $data['additional_js'] = $this->load->view('backend/user/dashboard/js', [], TRUE);
 

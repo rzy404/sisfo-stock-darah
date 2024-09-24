@@ -5,62 +5,23 @@
     </div>
     <section class="section">
         <div class="row mb-2">
-            <div class="col-12 col-md-3">
-                <div class="card card-statistic">
-                    <div class="card-body p-0">
-                        <div class="d-flex flex-column">
-                            <div class='px-3 py-3 d-flex justify-content-between'>
-                                <h3 class='card-title'>AB</h3>
-                                <div class="card-right d-flex align-items-center">
-                                    <p>423 </p>
+            <?php foreach ($totalBloodStock as $stock): ?>
+                <div class="col-12 col-md-3">
+                    <div class="card card-statistic <?php echo $stock->total == 0 ? 'no-stock' : ''; ?>">
+                        <div class="card-body p-0">
+                            <div class="d-flex flex-column">
+                                <div class='px-3 py-3 d-flex justify-content-between'>
+                                    <h3 class="card-title"><?php echo $stock->golongan_darah; ?></h3>
+                                    <div class="card-right d-flex align-items-center">
+                                        <p class="card-right d-flex align-items-center"><?php echo $stock->total; ?> </p>
+                                        <p> Kantong</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <div class="card card-statistic">
-                    <div class="card-body p-0">
-                        <div class="d-flex flex-column">
-                            <div class='px-3 py-3 d-flex justify-content-between'>
-                                <h3 class='card-title'>A</h3>
-                                <div class="card-right d-flex align-items-center">
-                                    <p>423 </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <div class="card card-statistic">
-                    <div class="card-body p-0">
-                        <div class="d-flex flex-column">
-                            <div class='px-3 py-3 d-flex justify-content-between'>
-                                <h3 class='card-title'>B</h3>
-                                <div class="card-right d-flex align-items-center">
-                                    <p>423 </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <div class="card card-statistic">
-                    <div class="card-body p-0">
-                        <div class="d-flex flex-column">
-                            <div class='px-3 py-3 d-flex justify-content-between'>
-                                <h3 class='card-title'>O</h3>
-                                <div class="card-right d-flex align-items-center">
-                                    <p>423 </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
         <div class="row mb-4">
             <div class="col-md-6 mx-auto">
@@ -134,7 +95,7 @@
                     </div>
                     <div class="card-body px-0 pb-0">
                         <div class="table-responsive">
-                            <table class='table mb-0' id="table1">
+                            <table class="table mb-0" id="table1">
                                 <thead>
                                     <tr>
                                         <th>Nama Pendonor</th>
@@ -144,55 +105,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Graiden</td>
-                                        <td>vehicula.aliquet@semconsequat.co.uk</td>
-                                        <td>A+</td>
-                                        <td>2023-09-10</td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>Dale</td>
-                                        <td>fringilla.euismod.enim@quam.ca</td>
-                                        <td>O-</td>
-                                        <td>2023-09-08</td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>Nathaniel</td>
-                                        <td>mi.Duis@diam.edu</td>
-                                        <td>B+</td>
-                                        <td>2023-09-05</td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>Darius</td>
-                                        <td>velit@nec.com</td>
-                                        <td>AB+</td>
-                                        <td>2023-09-03</td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>Ganteng</td>
-                                        <td>velit@nec.com</td>
-                                        <td>O+</td>
-                                        <td>2023-09-01</td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>Oleg</td>
-                                        <td>rhoncus.id@Aliquamauctorvelit.net</td>
-                                        <td>A-</td>
-                                        <td>2023-08-30</td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>Kermit</td>
-                                        <td>diam.Sed.diam@anteVivamusnon.org</td>
-                                        <td>B-</td>
-                                        <td>2023-08-28</td>
-
-                                    </tr>
+                                    <?php foreach ($pendonor as $donor) { ?>
+                                        <tr>
+                                            <td><?= $donor['nama_pendonor']; ?></td>
+                                            <td><?= $donor['email']; ?></td>
+                                            <td><?= $donor['golongan_darah']; ?></td>
+                                            <td><?= $donor['tanggal_donor_terakhir']; ?></td>
+                                        </tr>
+                                    <?php } ?>
                                 </tbody>
                             </table>
                         </div>

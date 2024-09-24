@@ -12,6 +12,16 @@ class Pendonor_model extends CI_Model
         $this->load->database();
     }
 
+    public function getRiwayatPendonor()
+    {
+        $this->db->select('pengguna.nama AS nama_pendonor, pengguna.email, golongan_darah.golongan_darah, donor.tanggal_donor_terakhir');
+        $this->db->from('donor');
+        $this->db->join('pengguna', 'donor.pengguna = pengguna.id');
+        $this->db->join('golongan_darah', 'donor.golongan_darah = golongan_darah.id');
+        $query = $this->db->get();
+        return $query->result_array();
+    }
+
     public function get_pendonor_datatables()
     {
         $this->_get_custom_query_by_pendonor();

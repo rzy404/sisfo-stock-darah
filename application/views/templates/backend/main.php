@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?> - Sistem Informasi Stok Darah</title>
 
-    <link rel="shortcut icon" href="<?= base_url('assets/images/favicon.svg') ?>" type="image/x-icon">
+    <link rel="shortcut icon" href="<?= base_url('assets/images/logo.png') ?>" type="image/x-icon">
     <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/vendors/perfect-scrollbar/perfect-scrollbar.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
