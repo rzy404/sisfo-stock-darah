@@ -10,12 +10,15 @@ class LandingPage extends CI_Controller
         date_default_timezone_set('Asia/Jakarta');
         $this->load->library('form_validation');
         $this->load->model('GolonganDarah_model', 'GolonganDarah');
+        $this->load->model('LandingPage_model', 'LandingPage');
     }
 
     public function index()
     {
         $data['title'] = 'Sistem Informasi Stok Darah';
         $data['golongan_darah'] = $this->GolonganDarah->select();
+        $data['blood_stocks'] = $this->get_blood_stocks();
+        $data['monthly_donations'] = $this->get_monthly_donations();
         $this->load->view('frontend/index', $data);
     }
 
@@ -73,6 +76,23 @@ class LandingPage extends CI_Controller
             echo json_encode($response);
             return;
         }
+    }
+
+    private function get_blood_stocks()
+    {
+        return $this->LandingPage->get_blood_stocks();
+    }
+
+    private function get_monthly_donations()
+    {
+        $monthly_donations = $this->LandingPage->get_monthly_donations();
+        $result = array_fill(1, 12, 0); // Initialize all months with 0
+
+        foreach ($monthly_donations as $donation) {
+            $result[$donation->month] = $donation->count;
+        }
+
+        return $result;
     }
 }
 

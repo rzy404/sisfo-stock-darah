@@ -249,46 +249,18 @@
         <div class="container">
             <h2 class="text-center section-title">Stok Darah Terkini</h2>
             <div class="row mt-5">
-                <div class="col-md-3 mb-4">
-                    <div class="card blood-stock-card text-center">
-                        <div class="card-body">
-                            <i class="fas fa-tint stock-icon mb-3"></i>
-                            <h3 class="card-title">A</h3>
-                            <p class="card-text display-6 fw-bold">120</p>
-                            <p class="text-muted">Kantong</p>
+                <?php foreach ($blood_stocks as $stock): ?>
+                    <div class="col-md-3 mb-4">
+                        <div class="card blood-stock-card text-center <?php echo $stock->total == 0 ? 'no-stock' : ''; ?>">
+                            <div class="card-body">
+                                <i class="fas fa-tint stock-icon mb-3"></i>
+                                <h3 class="card-title"><?php echo $stock->golongan_darah; ?></h3>
+                                <p class="card-text display-6 fw-bold"><?php echo $stock->total; ?></p>
+                                <p class="text-muted">Kantong</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card blood-stock-card text-center">
-                        <div class="card-body">
-                            <i class="fas fa-tint stock-icon mb-3"></i>
-                            <h3 class="card-title">B</h3>
-                            <p class="card-text display-6 fw-bold">85</p>
-                            <p class="text-muted">Kantong</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card blood-stock-card text-center">
-                        <div class="card-body">
-                            <i class="fas fa-tint stock-icon mb-3"></i>
-                            <h3 class="card-title">AB</h3>
-                            <p class="card-text display-6 fw-bold">30</p>
-                            <p class="text-muted">Kantong</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card blood-stock-card text-center">
-                        <div class="card-body">
-                            <i class="fas fa-tint stock-icon mb-3"></i>
-                            <h3 class="card-title">O</h3>
-                            <p class="card-text display-6 fw-bold">150</p>
-                            <p class="text-muted">Kantong</p>
-                        </div>
-                    </div>
-                </div>
+                <?php endforeach; ?>
             </div>
             <div class="row mt-5">
                 <div class="col-lg-8 mx-auto">
@@ -298,6 +270,7 @@
             </div>
         </div>
     </section>
+
 
     <section id="about" class="py-5 bg-white">
         <div class="container">
@@ -435,7 +408,7 @@
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [{
                     label: 'Jumlah Donasi',
-                    data: [65, 59, 80, 81, 56, 55, 40, 45, 50, 55, 60, 70],
+                    data: <?php echo json_encode(array_values($monthly_donations)); ?>,
                     fill: false,
                     borderColor: 'rgb(229, 57, 53)',
                     backgroundColor: 'rgba(229, 57, 53, 0.1)',
