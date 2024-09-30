@@ -58,6 +58,12 @@ class TransaksiDarah_model extends CI_Model
         return $this->db->count_all_results();
     }
 
+    public function getById($id)
+    {
+        $this->db->where('id', $id);
+        return $this->db->get($this->table)->row();
+    }
+
     public function select()
     {
         return $this->db->get($this->table)->result();

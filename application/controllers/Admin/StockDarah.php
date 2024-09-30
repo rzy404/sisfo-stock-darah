@@ -160,36 +160,42 @@ class StockDarah extends CI_Controller
     {
         $id = $this->input->post('id', true);
 
+        // Start a transaction
+        $this->db->trans_begin();
+
+        // Get the stock log entry by ID
         $get_log = $this->StockDarahLog->get_by_id($id);
 
-        if ($get_log) {
-            $delete_log = $this->StockDarahLog->delete($get_log->id);
+        // Attempt to delete the stock master entry
+        $delete_master = $this->StockDarah->delete($id);
 
-            if ($delete_log) {
-                $delete_master = $this->StockDarah->delete($id);
-
-                if ($delete_master) {
-                    echo json_encode([
-                        'status' => true,
-                        'message' => 'Data berhasil dihapus',
-                    ]);
-                } else {
+        if ($delete_master) {
+            // If log exists, attempt to delete it
+            if ($get_log) {
+                $delete_log = $this->StockDarahLog->delete($get_log->id);
+                if (!$delete_log) {
+                    // Log deletion failed, but we proceed as stock was deleted successfully
+                    $this->db->trans_rollback(); // Rollback to maintain consistency
                     echo json_encode([
                         'status' => false,
-                        'message' => 'Gagal menghapus data stok master',
+                        'message' => 'Data stok master berhasil dihapus, tetapi gagal menghapus data log.',
                     ]);
+                    return; // Exit early
                 }
-            } else {
-                echo json_encode([
-                    'status' => false,
-                    'message' => 'Gagal menghapus data log',
-                ]);
             }
+
+            // Commit the transaction if stock deletion is successful
+            $this->db->trans_commit();
+            echo json_encode([
+                'status' => true,
+                'message' => 'Data stok master berhasil dihapus.',
+            ]);
         } else {
-            // Jika data log tidak ditemukan
+            // Rollback the transaction if stock deletion failed
+            $this->db->trans_rollback();
             echo json_encode([
                 'status' => false,
-                'message' => 'Data log tidak ditemukan',
+                'message' => 'Gagal menghapus data stok master.',
             ]);
         }
     }

@@ -62,12 +62,74 @@ class TransaksiDarah extends CI_Controller
     public function deleteTransaksiDarah()
     {
         $id = $this->input->post('id');
-        $deleted = $this->TransaksiDarah->delete($id);
 
-        if ($deleted) {
-            $response = array('status' => true, 'message' => 'Data transaksi darah telah dihapus.');
+        // Start transaction
+        $this->db->trans_begin();
+
+        // Get transaksi_darah data for potential rollback of stok_darah
+        $transaksi = $this->TransaksiDarah->getById($id);
+
+        if ($transaksi) {
+            // If transaction type is 'Donasi', decrease stok_darah
+            // If transaction type is 'Penggunaan', increase stok_darah
+            if ($transaksi->jenis_transaksi == 'Donasi') {
+                $this->db->set('jumlah', 'jumlah - ' . (int)$transaksi->jumlah, FALSE);
+                $this->db->where('id', $transaksi->stok_darah);
+                $this->db->update('stok_darah');
+
+                if (!empty($transaksi->donor)) {
+                    // Delete the donor record
+                    $this->db->where('id', $transaksi->donor);
+                    $this->db->delete('donor');
+                }
+            } else if ($transaksi->jenis_transaksi == 'Penggunaan') {
+                $this->db->set('jumlah', 'jumlah + ' . (int)$transaksi->jumlah, FALSE);
+                $this->db->where('id', $transaksi->stok_darah);
+                $this->db->update('stok_darah');
+
+                if (!empty($transaksi->permintaan_darah)) {
+                    // Delete the permintaan_darah record
+                    $this->db->where('id', $transaksi->permintaan_darah);
+                    $this->db->delete('permintaan_darah');
+                }
+            }
+
+            // Delete the transaksi_darah record
+            $this->db->where('stok_darah', $transaksi->stok_darah);
+            $this->db->delete('transaksi_darah');  // Hapus semua transaksi terkait stok darah
+
+            // Log stok_darah change
+            $data_log = array(
+                'stok_darah' => $transaksi->stok_darah,
+                'jumlah' => $transaksi->jumlah,
+                'jenis_transaksi' => ($transaksi->jenis_transaksi == 'Donasi') ? 'Kurang' : 'Tambah',
+                'tanggal_log' => date('Y-m-d')
+            );
+            $this->db->insert('stok_darah_log', $data_log);
+
+            // Check if stok_darah is less than or equal to 0, then delete the stok_darah record
+            $this->db->where('id', $transaksi->stok_darah);
+            $stok_darah = $this->db->get('stok_darah')->row();
+            if ($stok_darah && $stok_darah->jumlah <= 0) {
+                // Delete stok_darah after all transactions are deleted
+                $this->db->where('id', $stok_darah->id);
+                $this->db->delete('stok_darah');
+            }
+
+            // Check if all queries were successful
+            if ($this->db->trans_status() === FALSE) {
+                // Rollback transaction if there was an error
+                $this->db->trans_rollback();
+                $response = array('status' => false, 'message' => 'Gagal menghapus data transaksi darah.');
+            } else {
+                // Commit transaction if no errors
+                $this->db->trans_commit();
+                $response = array('status' => true, 'message' => 'Data transaksi darah berhasil dihapus.');
+            }
         } else {
-            $response = array('status' => false, 'message' => 'Data transaksi darah gagal dihapus.');
+            // If transaction not found
+            $this->db->trans_rollback();
+            $response = array('status' => false, 'message' => 'Data transaksi darah tidak ditemukan.');
         }
 
         echo json_encode($response);

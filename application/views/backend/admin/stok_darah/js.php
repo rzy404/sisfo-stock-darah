@@ -183,6 +183,7 @@
 
         $(document).on('click', '#btnDeleteStokDarah', function() {
             var id = $(this).data('id');
+            console.log(id)
             Swal.fire({
                 title: 'Apakah anda yakin?',
                 text: "Anda akan menghapus data ini",
