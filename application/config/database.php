@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-$active_group = 'local';
+$active_group = 'server';
 $query_builder = TRUE;
 
 $db['local'] = array(
@@ -27,10 +27,10 @@ $db['local'] = array(
 );
 $db['server'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => '',
-	'password' => '',
-	'database' => '',
+	'hostname' => '8.219.180.60',
+	'username' => 'stok_darah',
+	'password' => 'halvingday',
+	'database' => 'stok_darah',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
